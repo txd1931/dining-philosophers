@@ -1,4 +1,4 @@
-package application;
+/*package application;
 import java.util.Scanner;
 public class Program {
 	
@@ -10,7 +10,7 @@ public class Program {
 
 	public static int[] signal;
 	
-	public static void main(String[] args){
+	public static void sla(String[] args){
         if (true) {
             problemSetup();
         }
@@ -40,7 +40,7 @@ public class Program {
 	
 	private static void initialization() {
 		for(int i = 0; i < numPhilosophers; i++) {
-			Philosopher newPhilosopher = new Philosopher((byte)i, simulationSpeed);
+			Phil newPhilosopher = new Phil((byte)i, simulationSpeed);
 			
             Thread newThread = new Thread(newPhilosopher);
             
@@ -59,4 +59,4 @@ public class Program {
 		}
 	}
 }
-
+*/

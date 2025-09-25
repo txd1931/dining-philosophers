@@ -1,8 +1,9 @@
+/*
 package dinner_table;
 
 import java.util.Random;
 
-public class Philosopher implements Runnable {
+public class Phil implements Runnable {
 	enum State{
 		thinking,
 		eating,
@@ -16,7 +17,7 @@ public class Philosopher implements Runnable {
 	private Random rand = new Random();
 
 
-	public Philosopher(final byte id, final double speed) {
+	public Phil(final byte id, final double speed) {
 		System.out.println("Novo filosofo criado como thread " + id);
 		this.id = id;
 		this.speed = speed;
@@ -75,4 +76,5 @@ public class Philosopher implements Runnable {
 		System.out.println("------------------");		
 	}
 }
-
+*/
+			

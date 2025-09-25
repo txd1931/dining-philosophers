@@ -7,10 +7,20 @@ Quando um filósofo fica faminto, ele tenta pegar seus garfos um de cada vez, n�
 Se pegar, ele come por um tempo, então para e continua a pensar
 */
 public class Main {
-	static int[] forks = new int[4];
+	public static int[] forks = new int[5];
 	
-	public static void main() {
-		System.out.println(forks);
+	public static void main(String[] args) {
+		Thread philosopher1 = new Thread(new Philosofers());
+		Thread philosopher2 = new Thread(new Philosofers());
+		Thread philosopher3 = new Thread(new Philosofers());
+		Thread philosopher4 = new Thread(new Philosofers());
+		Thread philosopher5 = new Thread(new Philosofers());
+		
+		philosopher1.start();
+		philosopher2.start();
+		philosopher3.start();
+		philosopher4.start();
+		philosopher5.start();
 	}
 	
 }
