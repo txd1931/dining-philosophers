@@ -1,4 +1,3 @@
-package application;
 import java.util.Random;
 public class Philosopher implements Runnable {
 	enum State{
@@ -40,14 +39,15 @@ public class Philosopher implements Runnable {
 			if ((TIME_LIMIT - (System.nanoTime() - TIME_AT_CREATION)) < 0 && TIME_LIMIT > 0 ){
 				//Thread.currentThread().interrupt();
 				println("Filosofo " + id + " esta finalizando.");
-				synchronized(this){
 
-					Program.donePhilosophers[id] = true;
-					while (!Program.checkIfAllDone()){
-						
-					}
-					outputInformation();
-				}
+                
+                 
+                Program.donePhilosophers[id] = true;
+                while (!Program.checkIfAllDone()){
+                    
+                }
+        
+                outputInformation();
 				return;
 			}
 		}
@@ -73,9 +73,8 @@ public class Philosopher implements Runnable {
 			println("Filosofo " + id + " foi interrompido enquanto comia");
 		}
 	}
-	public void outputInformation() {
-		println("------------------\n"
-		+ "Filosofo: " + id + "\n"
+	synchronized public void outputInformation() {
+		println("------------------\nFilosofo: " + id + "\n"
 		+ "Estado: " + switch(state) {
 			case THINKING -> "pensando";
 			case EATING -> "comendo";
@@ -88,4 +87,3 @@ public class Philosopher implements Runnable {
 		System.out.println(color + text + COLOR_RESET);
 	}
 }
-
