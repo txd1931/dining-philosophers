@@ -51,7 +51,7 @@ public class Program {
 			} catch (InterruptedException e) {}
 		}
 	}
-	public static boolean checkIfAllDone(){
+	public static boolean allTrue(){
 		for (boolean done : donePhilosophers) {
 			if (!done) {
 				return false;
