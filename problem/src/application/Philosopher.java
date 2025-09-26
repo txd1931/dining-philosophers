@@ -8,17 +8,20 @@ public class Philosopher implements Runnable {
 		GRABBING_FORKS,
 	}
 	private byte id = -1;
-	private double speed = Program.simulationSpeed;
 	private long cycles = 0;
 	private String color = "\u001B[37m";
-	private final String COLOR_RESET = "\u001B[0m";
 	private State state = State.INACTIVE;
-	private Random rand = new Random();
+	private final long TIME_AT_CREATION = System.nanoTime();
+	
+	private static double speed = Program.simulationSpeed;
+	private static final String COLOR_RESET = "\u001B[0m";
+	private final static Random rand = new Random();
+	private final static long TIME_LIMIT = Program.simulationTime;
 
 	public Philosopher(final byte id, final double speed) {
 		println("Novo filosofo criado como thread " + id);
 		this.id = id;
-		this.speed = speed;
+		Philosopher.speed = speed;
 		this.color = "\u001B[" + ((id % 8) + 30) +"m";
 	}
 
@@ -26,6 +29,7 @@ public class Philosopher implements Runnable {
 	public void run() {
 		println("Filosofo " + id + " esta ativo");
 		while(true){
+			//println((TIME_LIMIT - (System.nanoTime() - TIME_AT_CREATION)) < 0/* - 1000000000l*/);
 			state = State.THINKING;
 			think();
 			state = State.GRABBING_FORKS;
@@ -33,6 +37,19 @@ public class Philosopher implements Runnable {
 			state = State.EATING;
 			eat();
 			println("Filosofo " + id + " completou o ciclo " + cycles++);
+			if ((TIME_LIMIT - (System.nanoTime() - TIME_AT_CREATION)) < 0 && TIME_LIMIT > 0 ){
+				//Thread.currentThread().interrupt();
+				println("Filosofo " + id + " esta finalizando.");
+				synchronized(this){
+
+					Program.donePhilosophers[id] = true;
+					while (!Program.checkIfAllDone()){
+						
+					}
+					outputInformation();
+				}
+				return;
+			}
 		}
 	}
 	private void think() {
@@ -40,7 +57,7 @@ public class Philosopher implements Runnable {
 		println("Filosofo " + id + " esta pensando por " + delay + " milesegundos");
 		try {
 			Thread.sleep(delay);
-		} catch (Exception e){
+		} catch (InterruptedException e){
 			println("Filosofo " + id + " foi interrompido enquanto pensava");
 		}
 	}
@@ -52,12 +69,12 @@ public class Philosopher implements Runnable {
 		println("Filosofo " + id + " esta comendo por " + delay + " milesegundos");
 		try {
 			Thread.sleep(delay);
-		} catch (Exception e){
+		} catch (InterruptedException e){
 			println("Filosofo " + id + " foi interrompido enquanto comia");
 		}
 	}
 	public void outputInformation() {
-		println("------------------"
+		println("------------------\n"
 		+ "Filosofo: " + id + "\n"
 		+ "Estado: " + switch(state) {
 			case THINKING -> "pensando";
@@ -67,7 +84,7 @@ public class Philosopher implements Runnable {
 		+ "Ciclos completos: " + cycles + "\n" 
 		+ "------------------\n");		
 	}
-	private void println(final String text){
+	private void println(final Object text){
 		System.out.println(color + text + COLOR_RESET);
 	}
 }

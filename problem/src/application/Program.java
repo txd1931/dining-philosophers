@@ -2,12 +2,13 @@ package application;
 import java.util.Scanner;
 
 public class Program {
-	private static int numPhilosophers = 5;
+	public static int numPhilosophers = 5;
 	private static int numForks = numPhilosophers;
-	private static int simulationTime = 2000;
 	private static Thread[] philosophers;
+	public static long simulationTime = 2000l * 1000000l;
 	public static double simulationSpeed = 5;
 
+	public static boolean[] donePhilosophers = new boolean[numPhilosophers];
 
 	
 	public static void main(String[] args){
@@ -15,7 +16,6 @@ public class Program {
 		problemSetup();
 		initialization();
 		waitForSimulation();
-		if (simulationTime > 0) killPhilosophers();
 	}
 	
 	private static void problemSetup() {
@@ -25,7 +25,7 @@ public class Program {
             philosophers = new Thread[numPhilosophers];
             
             System.out.print("\nInsira o tempo de simulacao em segundos (0 para indeterminado): ");
-            simulationTime = 1000 * sc.nextInt();
+            simulationTime = 1000000000 * (long)sc.nextInt();
             
             System.out.print("\nInsira a velocidade de simulacao de 1% - 1000% (sem %): ");
             simulationSpeed = ((double)sc.nextInt()) / 100;
@@ -47,12 +47,13 @@ public class Program {
 			} catch (InterruptedException e) {}
 		}
 	}
-
-	private static void killPhilosophers() {
-		for(int i = 0; i < philosophers.length; i++){
-            philosophers[i].interrupt();
+	public static boolean checkIfAllDone(){
+		for (boolean done : donePhilosophers) {
+			if (!done) {
+				return false;
+			}
 		}
-		System.out.println("\nTempo de simulacao esgotado. Encerrando...");
+		return true;
 	}
 }
 
