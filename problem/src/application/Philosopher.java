@@ -1,78 +1,74 @@
 package application;
-
 import java.util.Random;
-
 public class Philosopher implements Runnable {
 	enum State{
-		thinking,
-		eating,
-		other,
+		INACTIVE,
+		THINKING,
+		EATING,
+		GRABBING_FORKS,
 	}
-	private Program program = null;
-	private byte id;
-	private double speed = 100;
-	private State state = State.other;
+	private byte id = -1;
+	private double speed = Program.simulationSpeed;
 	private long cycles = 0;
+	private String color = "\u001B[37m";
+	private final String COLOR_RESET = "\u001B[0m";
+	private State state = State.INACTIVE;
 	private Random rand = new Random();
 
-
 	public Philosopher(final byte id, final double speed) {
-		System.out.println("Novo filosofo criado como thread " + id);
+		println("Novo filosofo criado como thread " + id);
 		this.id = id;
 		this.speed = speed;
-		this.program = program;
+		this.color = "\u001B[" + ((id % 8) + 30) +"m";
 	}
-	
-	
+
 	@Override
 	public void run() {
-		System.out.println("Filosofo " + id + " esta ativo");
-        
-        while(true){
+		println("Filosofo " + id + " esta ativo");
+		while(true){
+			state = State.THINKING;
 			think();
-            getForks();
+			state = State.GRABBING_FORKS;
+			getForks();
+			state = State.EATING;
 			eat();
-			
-			System.out.println("filosofo " + id + " completou o ciclo " + cycles++);
+			println("Filosofo " + id + " completou o ciclo " + cycles++);
 		}
 	}
-	
 	private void think() {
-		int delay = rand.nextInt((int)(100 * speed));
-		System.out.println("Filosofo " + id + " esta pensando por " + delay + " milesegundos");
+		int delay = rand.nextInt((int)(100 / speed));
+		println("Filosofo " + id + " esta pensando por " + delay + " milesegundos");
 		try {
 			Thread.sleep(delay);
 		} catch (Exception e){
-			System.out.println("Filosofo " + id + " foi interrompido enquanto pensava");
+			println("Filosofo " + id + " foi interrompido enquanto pensava");
 		}
 	}
-	
-    private void getForks(){
-
-    }
-
+	synchronized private void getForks(){
+		
+	}
 	private void eat() {
-		int delay = rand.nextInt((int)(100 * speed));
-		System.out.println("Filosofo " + id + " esta comendo por " + delay + " milesegundos");
+		int delay = rand.nextInt((int)(100 / speed));
+		println("Filosofo " + id + " esta comendo por " + delay + " milesegundos");
 		try {
 			Thread.sleep(delay);
 		} catch (Exception e){
-			System.out.println("Filosofo " + id + " foi interrompido enquanto comia");
+			println("Filosofo " + id + " foi interrompido enquanto comia");
 		}
 	}
-	
 	public void outputInformation() {
-
-		System.out.println("------------------");
-		System.out.println("Filosofo: " + id);
-		System.out.println("Estado: "  +
-			switch(state) {
-				case thinking -> "pensando";
-				case eating -> "comendo";
-				case other -> "outro";
-			});
-		System.out.println("Ciclos completos: " + cycles);
-		System.out.println("------------------");		
+		println("------------------"
+		+ "Filosofo: " + id + "\n"
+		+ "Estado: " + switch(state) {
+			case THINKING -> "pensando";
+			case EATING -> "comendo";
+			default -> "outro";
+		} + "\n"
+		+ "Ciclos completos: " + cycles + "\n" 
+		+ "------------------\n");		
+	}
+	private void println(final String text){
+		System.out.println(color + text + COLOR_RESET);
 	}
 }
 
