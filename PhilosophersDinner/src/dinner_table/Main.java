@@ -8,6 +8,7 @@ Se pegar, ele come por um tempo, então para e continua a pensar
 */
 public class Main {
 	public static int[] forks = new int[5];
+	public static int counter = 0;
 	
 	public static void main(String[] args) {
 		Thread philosopher1 = new Thread(new Philosofers());
@@ -15,12 +16,15 @@ public class Main {
 		Thread philosopher3 = new Thread(new Philosofers());
 		Thread philosopher4 = new Thread(new Philosofers());
 		Thread philosopher5 = new Thread(new Philosofers());
+		Thread dinnerTime = new Thread(new Counter());
 		
 		philosopher1.start();
 		philosopher2.start();
 		philosopher3.start();
 		philosopher4.start();
 		philosopher5.start();
+		dinnerTime.start();
+		
 	}
 	
 }

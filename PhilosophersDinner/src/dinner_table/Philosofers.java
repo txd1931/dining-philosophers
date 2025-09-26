@@ -5,8 +5,6 @@ import java.util.Random;
 public class Philosofers implements Runnable{
 	private static byte idCounter = 0;
 	private byte id;
-	private int state = 0;
-	private String name;
 	private Random random = new Random();
 	
 	public Philosofers() {
@@ -14,7 +12,7 @@ public class Philosofers implements Runnable{
 	}
 	
 	public void think() {
-		int thinkIexist = random.nextInt(5001);
+		int thinkIexist = random.nextInt(10001);
 		try {
 			Thread.sleep(thinkIexist);
 		} catch (Exception e){
@@ -47,7 +45,7 @@ public class Philosofers implements Runnable{
 	
 	public void eat() {
 		try {
-			Thread.sleep(random.nextInt(5001));
+			Thread.sleep(random.nextInt(10001));
 		} catch (Exception e) {
 			System.out.println("Filosofo "+id+" foi jurado de morte em xique-xique por cumê");
 		}
@@ -63,13 +61,14 @@ public class Philosofers implements Runnable{
 	
 	@Override
 	public void run() {
-		while (true) {
-			think( );
+		while (Main.counter < 10) {
+			think();
 			takeLeftFork();
 			takeRightFork();
 			eat();
 			putForks();
 			}
+		System.out.println(id+" Tá de buxin cheio");
 	}
 	
 }
