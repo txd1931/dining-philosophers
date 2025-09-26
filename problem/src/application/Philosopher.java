@@ -43,7 +43,7 @@ public class Philosopher implements Runnable {
                 
                  
                 Program.donePhilosophers[id] = true;
-                while (!Program.checkIfAllDone()){
+                while (!Program.allTrue()){
                     
                 }
         
