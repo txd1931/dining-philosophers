@@ -1,14 +1,16 @@
 package sync;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Filosofo implements Runnable{
 	
+	public static int[] garfos = {1, 1, 1, 1, 1};
+	
 	int id;
-	static Random rand = new Random();
-	//static boolean executando; talvez use
+	static volatile boolean executando = false;
 	int lGarfo;
 	int rGarfo;
+	static int garfosAtuais = 0;
 	
 	static int tempoPensando;
 	static int tempoComendo;
@@ -21,30 +23,40 @@ public class Filosofo implements Runnable{
 	public void run(){
 		pensar();
 		
-			
+		executando = true;
+		
 		esqGarfo();
 		dirGarfo();
 		comer();
 		largar();
+			
+		executando = false;
 	}
 	
 	public void pensar() {
-		tempoPensando = rand.nextInt(10001);
-		System.out.println("Filosofo" + id + "está pensando");
+		tempoPensando = ThreadLocalRandom.current().nextInt(10001);
 		
-		try {
-			Thread.sleep(tempoPensando);
-		}catch(Exception exc){
-			System.out.println("Thread" + id + "interrompida");
-		}
+		
+		 do{
+			try {
+				Thread.sleep(tempoPensando);
+				System.out.println("Filosofo " + id + " está pensando");
+			}catch(Exception exc){
+				System.out.println("Thread " + id + " interrompida");
+				Thread.currentThread().interrupt();
+			}
+		}while(executando);
 	}
-	
 	public void esqGarfo() {
+		
 		lGarfo = this.id - 1;
 		
-		Jantar.garfos[lGarfo] = 0;
 		
-		System.out.println("Filosofo" + id + "pegou o garfo a sua esquerda");
+		if(garfos[lGarfo] == 1) {
+			garfos[lGarfo] = 0;
+			System.out.println("Filosofo " + id + " pegou o garfo a sua esquerda");
+			garfosAtuais++;
+		}
 	}
 	
 	public void dirGarfo() {
@@ -54,28 +66,32 @@ public class Filosofo implements Runnable{
 			rGarfo = this.id;
 		}
 		
-		Jantar.garfos[rGarfo] = 0;
-		
-		System.out.println("Filosofo" + + id + "pegou o garfo a sua direita");
+		if(garfos[rGarfo] == 1) {
+			garfos[rGarfo] = 0;
+			System.out.println("Filosofo " + + id + " pegou o garfo a sua direita");
+			garfosAtuais++;
+		}
 	}
 	
 	public void comer() {
-		if(Jantar.garfos[lGarfo] == 0 && Jantar.garfos[rGarfo] == 0) {
-			tempoComendo = rand.nextInt(10001);
-			System.out.println("Filosofo"+ id + "começou a comer");
+		if(garfosAtuais == 2) {
+			tempoComendo = ThreadLocalRandom.current().nextInt(10001);
+			System.out.println("Filosofo "+ id + " começou a comer");
 			
 			try {
 				Thread.sleep(tempoPensando);
 			}catch(Exception exc){
-				System.out.println("Thread" + id + "interrompida");
+				System.out.println("Thread " + id + " interrompida");
+				Thread.currentThread().interrupt();
 			}
 		}
 	}
 	
 	public void largar() {
-		Jantar.garfos[lGarfo] = 1;
-		Jantar.garfos[rGarfo] = 1;
 		
-		System.out.println("Filosofo"+ this.id + "largou os garfos");
+		garfos[lGarfo] = 1;
+		garfos[rGarfo] = 1;
+		garfosAtuais = 0;
+		System.out.println("Filosofo "+ this.id + " largou os garfos");
 	}
 }
