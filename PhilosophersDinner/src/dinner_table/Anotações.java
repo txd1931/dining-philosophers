@@ -2,6 +2,18 @@ package dinner_table;
 
 public class Anotações{
 /*
+ * 
+ * Modificar eat(), think() e putForks() [PG 136 PDF; Codigo base em C]
+	0 1 2 3 4
+	1 = 0/1
+	2 = 1/2
+	3 = 2/3
+	4 = 3/4
+	5 = 4/0 
+	forks[i] == 0 (livre)
+	forks[i] == 1 (robarão)
+ * 
+ * 
 - Caso um processo precise de um recurso indisponivel, ele deve ser bloquado ate que o recurso esteja disponivel
 
 Usar um arranjo, estado, para controlar se um filósofo está comendo, pensando, ou com fome (tentando conseguir garfos). 

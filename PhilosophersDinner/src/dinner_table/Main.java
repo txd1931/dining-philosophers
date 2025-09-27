@@ -11,12 +11,20 @@ Se pegar, ele come por um tempo, então para e continua a pensar
 // você consegue escrever um programa para cada filósofo que faça o que deve fazer e jamais fique travado?
 //output vezes que comeu, vezes que pensou
 public class Main {
+	
+	public enum StatePhilosopher {
+		THINKING,
+		EATING,
+		HUNGRY,
+		LEAVING
+	}
+	
 	// Timers
 	public static long timeAtCreation;
 	public static int limitTime;
 	
 	public static int[] forks = new int[5];
-	public static boolean[] donePhilosophers = new boolean[5];
+	public static StatePhilosopher[] statePhilosophers = new StatePhilosopher[5];
 	
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
@@ -74,10 +82,10 @@ public class Main {
 		}
 	}
 	
-	//By Rafael
-	synchronized static boolean allTrue(){
-		for (boolean done : donePhilosophers) {
-			if (!done) {
+	// Verificação das "assinaturas" dos filosofos
+	 static boolean allLeave(){
+		for (StatePhilosopher leave : statePhilosophers) {
+			if (leave != StatePhilosopher.LEAVING) {
 				return false;
 			}
 		}
