@@ -1,13 +1,15 @@
 package sync;
 
+
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Filosofo implements Runnable{
 	
 	public static int[] garfos = {1, 1, 1, 1, 1};
 	
 	int id;
-	static volatile boolean executando = false;
+	public static AtomicBoolean executando = new AtomicBoolean(false);
 	int lGarfo;
 	int rGarfo;
 	static int garfosAtuais = 0;
@@ -21,31 +23,30 @@ public class Filosofo implements Runnable{
 		
 	@Override
 	public void run(){
-		pensar();
+		do {
+			pensar();
+		}while(!(executando.compareAndSet(false, true)));
 		
-		executando = true;
-		
-		esqGarfo();
-		dirGarfo();
-		comer();
-		largar();
-			
-		executando = false;
+		try {
+			esqGarfo();
+			dirGarfo();
+			comer();
+			largar();
+		}finally {
+			executando.set(false);
+		}
 	}
 	
 	public void pensar() {
 		tempoPensando = ThreadLocalRandom.current().nextInt(10001);
 		
-		
-		 do{
-			try {
-				Thread.sleep(tempoPensando);
-				System.out.println("Filosofo " + id + " está pensando");
-			}catch(Exception exc){
-				System.out.println("Thread " + id + " interrompida");
-				Thread.currentThread().interrupt();
-			}
-		}while(executando);
+		try {
+			Thread.sleep(tempoPensando);
+			System.out.println("Filosofo " + id + " está pensando");
+		}catch(Exception exc){
+			System.out.println("Thread " + id + " interrompida");
+			Thread.currentThread().interrupt();
+		}
 	}
 	public void esqGarfo() {
 		
