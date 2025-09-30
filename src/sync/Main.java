@@ -1,9 +1,10 @@
 package sync;
 
 public class Main {
-	public static Thread[] filosofos = new Thread[5];
 	
 	public static void main(String[] args) {
+		
+		Thread[] filosofos = new Thread[5];
 		
 		filosofos = criarThreads(filosofos);
 		usarThreads(filosofos);
