@@ -6,16 +6,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Filosofo implements Runnable{
 	
+	public static long inicio = System.currentTimeMillis();
+	public static long tempoLimite = 70000;
+	
 	public static int[] garfos = {1, 1, 1, 1, 1};
 	
-	int id;
+	private int id;
 	public static AtomicBoolean executando = new AtomicBoolean(false);
-	int lGarfo;
-	int rGarfo;
-	static int garfosAtuais = 0;
+	private int lGarfo;
+	private int rGarfo;
+	public static int garfosAtuais = 0;
 	
-	static int tempoPensando;
-	static int tempoComendo;
+	private int execucoes;
+	
+	private long tempoPensando;
+	private long tempoComendo;
 	
 	public Filosofo(int id) {
 		this.id = id;
@@ -23,22 +28,26 @@ public class Filosofo implements Runnable{
 		
 	@Override
 	public void run(){
-			do {
-				pensar();
-			}while(!(executando.compareAndSet(false, true)) || garfos[this.lGarfo] == 0 || garfos[this.rGarfo] == 0);
-			
-			try {
-				esqGarfo();
-				dirGarfo();
-				comer();
-				largar();
-			}finally {
-				executando.compareAndSet(true, false);
+			while(System.currentTimeMillis() - inicio < tempoLimite) {
+				do {
+					pensar();
+				}while(!(executando.compareAndSet(false, true)) || !(garfos[this.lGarfo] == 1) || !(garfos[this.rGarfo] == 1));
+				
+				try {
+					esqGarfo();
+					dirGarfo();
+					comer();
+					largar();
+				}finally {
+					executando.compareAndSet(true, false);
+				}
 			}
+			
 	}
 	
+	
 	public void pensar() {
-		tempoPensando = ThreadLocalRandom.current().nextInt(10001);
+		this.tempoPensando = ThreadLocalRandom.current().nextInt(10001);
 		
 		this.lGarfo = this.id - 1;
 
@@ -49,7 +58,7 @@ public class Filosofo implements Runnable{
 		}
 		
 		try {
-			Thread.sleep(tempoPensando);
+			Thread.sleep(this.tempoPensando);
 			System.out.println("Filosofo " + id + " está pensando");
 		}catch(Exception exc){
 			System.out.println("Thread " + id + " interrompida");
@@ -84,11 +93,11 @@ public class Filosofo implements Runnable{
 			garfosAtuais = 0;
 			executando.set(false);
 			
-			tempoComendo = ThreadLocalRandom.current().nextInt(10001);
+			this.tempoComendo = ThreadLocalRandom.current().nextInt(10001);
 			System.out.println("Filosofo "+ id + " começou a comer");
 			
 			try {
-				Thread.sleep(tempoPensando);
+				Thread.sleep(this.tempoComendo);
 			}catch(Exception exc){
 				System.out.println("Thread " + id + " interrompida");
 				Thread.currentThread().interrupt();
@@ -104,5 +113,7 @@ public class Filosofo implements Runnable{
 		garfos[lGarfo] = 1;
 		garfos[rGarfo] = 1;
 		System.out.println("Filosofo "+ this.id + " largou os garfos");
+		this.execucoes++;
+		System.out.println("Filosofo "+ this.id + " comeu " + this.execucoes);
 	}
 }
