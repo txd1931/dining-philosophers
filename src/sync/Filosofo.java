@@ -7,20 +7,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Filosofo implements Runnable{
 	
 	public static long inicio = System.currentTimeMillis();
-	public static long tempoLimite = 70000;
+	public static long tempoLimite = 6001;
+	private long inicioLocal;
 	
-	public static int[] garfos = {1, 1, 1, 1, 1};
+	public static AtomicBoolean executando = new AtomicBoolean(false);
+	
+	public static int[] garfos = {-1, -1, -1, -1, -1};
 	
 	private int id;
-	public static AtomicBoolean executando = new AtomicBoolean(false);
 	private int lGarfo;
 	private int rGarfo;
-	public static int garfosAtuais = 0;
+	private int garfosAtuais = 0;
 	
 	private int execucoes;
 	
-	private long tempoPensando;
-	private long tempoComendo;
+	private long tempoExecutando;
 	
 	public Filosofo(int id) {
 		this.id = id;
@@ -31,15 +32,15 @@ public class Filosofo implements Runnable{
 			while(System.currentTimeMillis() - inicio < tempoLimite) {
 				do {
 					pensar();
-				}while(!(executando.compareAndSet(false, true)) || !(garfos[this.lGarfo] == 1) || !(garfos[this.rGarfo] == 1));
+					pegarGarfos();
+				}while(!(this.garfosAtuais == 2));
 				
 				try {
-					esqGarfo();
-					dirGarfo();
 					comer();
-					largar();
 				}finally {
-					executando.compareAndSet(true, false);
+					largar();
+					this.execucoes++;
+					System.out.println("Filosofo "+ this.id + " comeu " + this.execucoes + " vez(es)");
 				}
 			}
 			
@@ -47,7 +48,9 @@ public class Filosofo implements Runnable{
 	
 	
 	public void pensar() {
-		this.tempoPensando = ThreadLocalRandom.current().nextInt(10001);
+		this.tempoExecutando = ThreadLocalRandom.current().nextInt(1001);
+		
+		largar();
 		
 		this.lGarfo = this.id - 1;
 
@@ -58,62 +61,72 @@ public class Filosofo implements Runnable{
 		}
 		
 		try {
-			Thread.sleep(this.tempoPensando);
-			System.out.println("Filosofo " + id + " está pensando");
+			Thread.sleep(this.tempoExecutando);
+			System.out.println("Filosofo " + this.id + " está pensando");
 		}catch(Exception exc){
-			System.out.println("Thread " + id + " interrompida");
+			System.out.println("Thread " + this.id + " interrompida");
 			Thread.currentThread().interrupt();
 		}
 	}
-	public void esqGarfo() {
+	public void pegarGarfos() {
+		this.tempoExecutando = ThreadLocalRandom.current().nextInt(1001);
+		this.inicioLocal = System.currentTimeMillis();
 		
-		
-		if(garfos[lGarfo] == 1) {
-			garfos[lGarfo] = 0;
-			System.out.println("Filosofo " + id + " conseguiu pegar o garfo a sua esquerda");
-			garfosAtuais++;
-		}else {
-			System.out.println("Filosofo " + id + " não conseguiu pegar o garfo a sua esquerda");
-		}
-	}
-	
-	public void dirGarfo() {
-		
-		if(garfos[rGarfo] == 1) {
-			garfos[rGarfo] = 0;
-			System.out.println("Filosofo " + + id + " conseguiu pegar o garfo a sua direita");
-			garfosAtuais++;
-		}else {
-			System.out.println("Filosofo " + + id + " não conseguiu pegar o garfo a sua direita");
+		if(executando.compareAndSet(false, true)) {
+			while(System.currentTimeMillis() - this.inicioLocal < this.tempoExecutando && this.garfosAtuais != 2 ) {
+				
+				if(garfos[lGarfo] == -1) {
+					garfos[lGarfo] = this.id;
+					System.out.println("Filosofo " + this.id + " conseguiu pegar o garfo a sua esquerda");
+					this.garfosAtuais++;
+					
+				}		
+				if(garfos[rGarfo] == -1) {
+					garfos[rGarfo] = this.id;
+					System.out.println("Filosofo " + this.id + " conseguiu pegar o garfo a sua direita");
+					this.garfosAtuais++;
+					
+				}
+			}
 		}
 	}
 	
 	public void comer() {
-		if(garfosAtuais == 2) {
-			garfosAtuais = 0;
-			executando.set(false);
+			executando.compareAndSet(true, false);
 			
-			this.tempoComendo = ThreadLocalRandom.current().nextInt(10001);
-			System.out.println("Filosofo "+ id + " começou a comer");
+			this.tempoExecutando = ThreadLocalRandom.current().nextInt(1001);
+			System.out.println("Filosofo "+ this.id + " começou a comer");
 			
 			try {
-				Thread.sleep(this.tempoComendo);
+				Thread.sleep(this.tempoExecutando);
 			}catch(Exception exc){
-				System.out.println("Thread " + id + " interrompida");
+				System.out.println("Thread " + this.id + " interrompida");
 				Thread.currentThread().interrupt();
 			}
-		}else {
-			System.out.println("Filosofo "+ id +" não conseguiu comer");
-			garfosAtuais = 0;
-		}
 	}
 	
 	public void largar() {
-		
-		garfos[lGarfo] = 1;
-		garfos[rGarfo] = 1;
-		System.out.println("Filosofo "+ this.id + " largou os garfos");
-		this.execucoes++;
-		System.out.println("Filosofo "+ this.id + " comeu " + this.execucoes);
+		if(this.garfosAtuais == 2) {
+
+			executando.compareAndSet(true, false);
+			this.garfosAtuais = 0;
+			garfos[lGarfo] = -1;
+			garfos[rGarfo] = -1;
+			System.out.println("Filosofo "+ this.id + " largou os garfos");
+			
+		}else if(garfos[lGarfo] == this.id) {
+			
+			executando.compareAndSet(true, false);
+			this.garfosAtuais = 0;
+			System.out.println("Filosofo "+ this.id + " não conseguiu comer");
+			garfos[lGarfo] = -1;
+			
+		}else if(garfos[rGarfo] == this.id) {
+			
+			executando.compareAndSet(true, false);
+			this.garfosAtuais = 0;
+			garfos[rGarfo] = -1;
+			System.out.println("Filosofo "+ this.id + " não conseguiu comer");
+		}
 	}
 }
