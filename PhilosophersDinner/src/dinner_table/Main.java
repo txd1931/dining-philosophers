@@ -2,6 +2,7 @@ package dinner_table;
 
 import java.util.Scanner;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 	// Timers
@@ -52,6 +53,7 @@ public class Main {
 		System.out.println("\u001B[93m"+"Fechamos senhores"+"\u001B[37m");
 		
 	}
+	
 	// Contador de tempo para a simulação
 	public static void counterSimu() {
 		System.out.println("\u001B[93m"+"("+((System.currentTimeMillis() - Main.timeAtCreation)/1000)+") Segundos"+"\u001B[37m");
@@ -65,15 +67,18 @@ public class Main {
 		}
 	}
 
-	public static void acquire(Semaphore semaforo) {
-		try {
-			semaforo.acquire();
-		} catch (Exception e) {
-			Thread.currentThread().interrupt();
-			System.out.println("ESTA THREAD FOI INTERROMPIDA");
-		}
+	// Método para não repetir o Try e Catch na outra classe
+	public static boolean tryAcquire(Semaphore semaphore) {
+			try {
+				return semaphore.tryAcquire(1, TimeUnit.SECONDS);
+			} catch (Exception e) {
+				Thread.currentThread().interrupt();
+				System.out.println("ESTA THREAD FOI INTERROMPIDA");
+				return true;
+			}
 	}
 	
+	// For each que percorre donePhilosophers e verifica se todos os ínidices estão com o valor true
 	public static boolean allLeave(){
 		for (boolean done : donePhilosophers) {
 			if (!done) {
@@ -83,13 +88,13 @@ public class Main {
 		return true;
 	}
 	
-	synchronized public static void statistics(int id, int bites, int thinkTimes, int cycles) {
+	//Estatísticas
+	synchronized public static void statistics(int id, int bites, int thinkTimes) {
 		System.out.print("\u001B[32m");
 		System.out.println("-------------------------------");
 		System.out.println("Filosofo "+id+":");
 		System.out.println("Comeu "+bites+" vezes");
 		System.out.println("Filosofou "+thinkTimes+" vezes");
-		System.out.println("Realizou o ciclo "+cycles+" vezes");
 		System.out.print("\u001B[37m");
 	}
 }

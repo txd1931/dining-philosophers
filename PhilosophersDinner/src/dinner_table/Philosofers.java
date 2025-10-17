@@ -13,7 +13,6 @@ public class Philosofers implements Runnable{
 	// Contadores para as estatísticas
 	private int bites = 0;
 	private int thinkTimes = 0;
-	private int cycles = 0;
 
 	private Random random = new Random();
 	
@@ -31,7 +30,7 @@ public class Philosofers implements Runnable{
 			System.out.println("Filosofo "+id+" terminou de filosofar");
 			thinkTimes++;
 		} catch (Exception e){
-			System.out.println("\u001B[31m"+"Filosofo"+id+" nao conseguiu filosofar"+"\u001B[37m");
+			System.out.println("\u001B[31m"+"Filosofo"+id+" nao conseguiu filosofar, ou o tempo acabou."+"\u001B[37m");
 		}
 	}
 	
@@ -39,20 +38,44 @@ public class Philosofers implements Runnable{
 		System.out.println("Filosofo: "+this.id+" sentiu fome");
 		// Tenta pegar os garfos
 		lookforForks(this.id, this.leftFork, this.rightFork);
-		System.out.println("Filosofo: "+this.id+" pegou os garfos de indices "+this.leftFork+" e "+this.rightFork);
 	}
 
 	public void lookforForks(int id, int leftFork, int rightFork) {
-		if(this.id == 5) {
-			//Tenta pegar o garfo esquerdo
-			Main.acquire(Main.forks[rightFork]);
-			//Tenta pegar o garfo direito		
-			Main.acquire(Main.forks[leftFork]);
-		} else {
-			//Tenta pegar o garfo esquerdo
-			Main.acquire(Main.forks[leftFork]);
-			//Tenta pegar o garfo direito		
-			Main.acquire(Main.forks[rightFork]);
+		boolean takef = false;
+		while(!takef) {
+			//Decide de modo aleatório a ordem que pega os garfos
+			int wichfork = random.nextInt(1, 3);
+			
+			if(wichfork == 2) {
+				//Tenta pegar o garfo direito 
+				takef = Main.tryAcquire(Main.forks[rightFork]);
+				if(takef) {
+					System.out.println("Filosofo "+this.id+" pegou o garfo direito");	
+					//Tenta pegar o garfo esquerdo		
+					takef = Main.tryAcquire(Main.forks[leftFork]);
+					if(takef) {
+						System.out.println("Filosofo "+this.id+" pegou o garfo esquerdo");
+					} else {
+						//Se não consegiu ele devolve o garfo que pegou
+						Main.forks[this.rightFork].release();
+					}
+				}
+			}
+			if(wichfork == 1) {
+				//Tenta pegar o garfo esquerdo 
+				takef = Main.tryAcquire(Main.forks[leftFork]);
+				if(takef) {
+					System.out.println("Filosofo "+this.id+" pegou o garfo esquerdo");	
+					//Tenta pegar o garfo direito	
+					takef = Main.tryAcquire(Main.forks[rightFork]);
+					if(takef) {
+						System.out.println("Filosofo "+this.id+" pegou o garfo direito");
+					} else {
+						//Se não consegiu ele devolve o garfo que pegou
+						Main.forks[this.leftFork].release();
+					}
+				}
+			}
 		}
 	}
 	
@@ -62,15 +85,29 @@ public class Philosofers implements Runnable{
 			bites++;
 			System.out.println("Filosofo "+this.id+" Comeu");
 		} catch (Exception e) {
-			System.out.println("\u001B[31m"+"Filosofo "+this.id+" nao conseguiu comer"+"\u001B[37m");
+			System.out.println("\u001B[31m"+"Filosofo "+this.id+" nao conseguiu comer, ou o tempo acabou."+"\u001B[37m");
 		}
 	}
 
 	public void putForks() {
-		// Verifica se seus adjacentes delcararam estar comendo
-		Main.forks[this.leftFork].release();
-		Main.forks[this.rightFork].release();
-		System.out.println("Filosofo "+this.id+" devolveu os garfos");
+		// Devolve os garfos
+		int wichfork = random.nextInt(1, 3);
+		if(wichfork == 2) {
+			//Tenta pegar o garfo esquerdo
+			Main.forks[this.rightFork].release();
+			System.out.println("Filosofo "+this.id+" devolveu o garfo direito primeiro");
+			//Tenta pegar o garfo direito		
+			Main.forks[this.leftFork].release();
+			System.out.println("Filosofo "+this.id+" devolveu o garfo esquerdo");
+		} //else {
+		if(wichfork == 1) {
+			//Tenta pegar o garfo esquerdo
+			Main.forks[this.leftFork].release();
+			System.out.println("Filosofo "+this.id+" devolveu o garfo esquerdo primeiro");
+			//Tenta pegar o garfo direito		
+			Main.forks[this.rightFork].release();
+			System.out.println("Filosofo "+this.id+" devolveu o garfo direito");
+		}
 	}
 	
 	@Override
@@ -80,12 +117,13 @@ public class Philosofers implements Runnable{
 			takeForks();
 			eat();
 			putForks();
-			cycles++;
-			System.out.println(this.id+" finalizou um ciclo");
 		}
+		// 'Assina' seu nome na lista
 		Main.donePhilosophers[id-1] = true;
+		// Espera todos 'assinarem a lista' 
 		while(!Main.allLeave());
-		Main.statistics(this.id, this.bites, this.thinkTimes, this.cycles);
+		// Mostra as estatísticas
+		Main.statistics(this.id, this.bites, this.thinkTimes);
 	}
 	
 }
